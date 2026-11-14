@@ -9,6 +9,8 @@ $ErrorActionPreference = 'Stop'
 
 $root = $PSScriptRoot
 $build = Join-Path $root $BuildDirectory
+& (Join-Path $root 'setup-lean.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Lean setup failed.' }
 $nativeCmake = Join-Path $env:ProgramFiles 'CMake\bin\cmake.exe'
 $cmake = if (Test-Path -LiteralPath $nativeCmake -PathType Leaf) {
     $nativeCmake

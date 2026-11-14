@@ -63,6 +63,8 @@ endif()
 
 enable_testing()
 add_test(NAME engine_selftest COMMAND math_research_v03 selftest "${CMAKE_CURRENT_BINARY_DIR}/selftest")
+set_tests_properties(engine_selftest PROPERTIES
+    ENVIRONMENT "MRE_TEST_CORPUS=${CMAKE_CURRENT_SOURCE_DIR}/tests/corpus")
 
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND AND NOT WIN32)
@@ -289,3 +291,4 @@ endif()
 install(TARGETS ${MRE_RELEASE_TARGETS} RUNTIME DESTINATION bin)
 install(DIRECTORY formula_examples/ DESTINATION examples)
 install(DIRECTORY lean/ DESTINATION lean FILES_MATCHING PATTERN "*.lean")
+install(DIRECTORY tests/corpus/ DESTINATION tests/corpus FILES_MATCHING PATTERN "*.lean")

@@ -3,11 +3,35 @@
 #include <cstdlib>
 #include <unordered_map>
 #include <unordered_set>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace mre {
 
 fs::path findLeanExecutable() {
 #ifdef _WIN32
+    char* configured = nullptr;
+    size_t configured_len = 0;
+    if (_dupenv_s(&configured, &configured_len, "MRE_LEAN_EXE") == 0 && configured) {
+        fs::path p(configured);
+        free(configured);
+        if (fs::is_regular_file(p)) return p;
+    }
+
+    wchar_t module_path[32768]{};
+    const DWORD module_length = GetModuleFileNameW(nullptr, module_path, 32768);
+    if (module_length > 0 && module_length < 32768) {
+        const fs::path executable_dir = fs::path(module_path).parent_path();
+        const fs::path bundled_candidates[] = {
+            executable_dir / L"lean-runtime" / L"bin" / L"lean.exe",
+            executable_dir.parent_path() / L"lean-runtime" / L"bin" / L"lean.exe"
+        };
+        for (const auto& candidate : bundled_candidates) {
+            if (fs::is_regular_file(candidate)) return candidate;
+        }
+    }
+
     // Check user elan directory
     char* userprofile = nullptr;
     size_t len = 0;

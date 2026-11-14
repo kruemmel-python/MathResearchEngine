@@ -8,10 +8,13 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Install pinned Lean toolchain
+        shell: pwsh
+        run: .\setup-lean.ps1
       - name: Configure
         run: cmake -S . -B build-windows -G "Visual Studio 17 2022" -A x64
       - name: Build
         run: cmake --build build-windows --config Release --parallel
       - name: Test
-        run: cmake --build build-windows --config Release --target RUN_TESTS
+        run: ctest --test-dir build-windows -C Release --output-on-failure

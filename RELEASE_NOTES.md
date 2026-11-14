@@ -8,7 +8,7 @@ First clean developer release of the current CMake source tree.
 - Native Windows Research IDE
 - Formula counterexample analysis
 - SQLite-backed hypothesis and research workflows
-- Optional Lean 4 extraction, semantic probes and formal verification
+- Bundled Lean 4.34.1 runtime, extraction, semantic probes and formal verification
 - K4D, semantic, multi-relation, application-discovery and software-lab targets
 - Reproducible Visual Studio 2022 build script and Windows CI
 - Example `.mreformula` files and Lean helper scripts
@@ -26,6 +26,6 @@ Generated databases, historical result folders, cached dependencies, local build
 
 ## Requirements
 
-The binary package targets Windows x64. Building from source requires Visual Studio 2022 with Desktop C++ and CMake 3.21 or newer. Lean, Gemini/LM Studio and the KR compiler are optional integrations described in `README.md`.
+The binary package targets Windows x64 and includes the Lean runtime needed by the engine. Building from source requires Visual Studio 2022 with Desktop C++, CMake 3.21 or newer and internet access for the pinned Lean setup. Gemini/LM Studio and the KR compiler remain optional integrations described in `README.md`.
 
 No open-source license has been selected yet; standard copyright rules apply.

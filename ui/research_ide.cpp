@@ -268,7 +268,25 @@ void prepareLeanEnvironment() {
     }
     if (GetEnvironmentVariableW(L"MRE_LEAN_EXE", envBuf, 32768) > 0) {
         leanBin = envBuf;
-    } else if (GetEnvironmentVariableW(L"USERPROFILE", envBuf, 32768) > 0) {
+    } else {
+        wchar_t modulePath[32768]{};
+        const DWORD moduleLength = GetModuleFileNameW(nullptr, modulePath, 32768);
+        if (moduleLength > 0 && moduleLength < 32768) {
+            const fs::path executableDir = fs::path(modulePath).parent_path();
+            const fs::path bundledCandidates[] = {
+                executableDir / L"lean-runtime" / L"bin" / L"lean.exe",
+                executableDir.parent_path() / L"lean-runtime" / L"bin" / L"lean.exe"
+            };
+            for (const auto& candidate : bundledCandidates) {
+                if (fs::is_regular_file(candidate)) {
+                    leanBin = candidate.wstring();
+                    SetEnvironmentVariableW(L"MRE_LEAN_EXE", leanBin.c_str());
+                    return;
+                }
+            }
+        }
+    }
+    if (leanBin == L"lean" && GetEnvironmentVariableW(L"USERPROFILE", envBuf, 32768) > 0) {
         const fs::path elanLean = fs::path(envBuf) / L".elan" / L"bin" / L"lean.exe";
         if (fs::is_regular_file(elanLean)) leanBin = elanLean.wstring();
     }

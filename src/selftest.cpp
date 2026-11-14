@@ -399,21 +399,20 @@ static bool test18_EndToEndResearchCycle(const fs::path& dir, const fs::path& /*
 }
 
 int runSelftest(const fs::path& temp_dir) {
+    if (fs::exists(temp_dir)) fs::remove_all(temp_dir);
     fs::create_directories(temp_dir);
-    fs::path corpus_dir = "F:/MathResearchEngine_v0_3/tests/corpus";
-    if (!fs::exists(corpus_dir)) {
-        corpus_dir = temp_dir / "corpus";
-        fs::create_directories(corpus_dir);
-    }
+    const char* corpusEnv = std::getenv("MRE_TEST_CORPUS");
+    fs::path corpus_dir = corpusEnv && *corpusEnv
+        ? fs::path(corpusEnv)
+        : fs::current_path() / "tests" / "corpus";
 
     std::cout << "\n=====================================================================\n";
     std::cout << "    STARTING COMPREHENSIVE 18-POINT ENGINE VALIDATION SUITE          \n";
     std::cout << "=====================================================================\n";
 
     Verifier verifier;
-
     int passed = 0;
-    int total = 18;
+    const int total = 18;
 
     if (test1_CppBuild()) passed++;
     if (test2_SelftestFramework()) passed++;
@@ -435,7 +434,7 @@ int runSelftest(const fs::path& temp_dir) {
     if (test18_EndToEndResearchCycle(temp_dir, corpus_dir)) passed++;
 
     std::cout << "=====================================================================\n";
-    std::cout << "TEST RESULTS: " << passed << " / " << total << " PASSED\n";
+    std::cout << "TEST RESULTS: " << passed << " / " << total << " TESTS PASSED\n";
     std::cout << "=====================================================================\n\n";
 
     return (passed == total) ? 0 : 1;

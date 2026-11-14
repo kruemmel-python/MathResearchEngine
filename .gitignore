@@ -1,6 +1,7 @@
 /build/
 /build-windows/
 /out/
+/dist/
 /work/
 /KR_BUILD/
 /.vs/

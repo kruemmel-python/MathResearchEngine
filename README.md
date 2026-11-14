@@ -1,6 +1,6 @@
 # MathResearchEngine
 
-MathResearchEngine is a C++20 research environment for generating, testing and auditing mathematical hypotheses. It combines numerical counterexample searches, SQLite-backed research runs, optional Lean 4 verification and a native Windows research IDE.
+MathResearchEngine is a C++20 research environment for generating, testing and auditing mathematical hypotheses. It combines numerical counterexample searches, SQLite-backed research runs, required Lean 4 verification and a native Windows research IDE.
 
 ## Build on Windows
 
@@ -11,6 +11,7 @@ Requirements:
 - CMake 3.21 or newer available on `PATH`
 - PowerShell 5.1 or newer
 - Python 3 is optional and enables the integration tests
+- Internet access for the first source build, so the pinned Lean 4.34.1 toolchain can be installed
 
 Clone and build:
 
@@ -20,12 +21,18 @@ Set-Location MathResearchEngine
 .\build-windows.ps1
 ```
 
-The script configures the complete project, compiles all current CMake targets and runs CTest. Binaries are written to `build-windows\Release`.
+The script installs the version from `lean-toolchain` when necessary, configures the complete project, compiles all current CMake targets and runs CTest. All 18 engine tests, including the four real Lean invocations, are mandatory. Binaries are written to `build-windows\Release`.
 
 Start the native IDE:
 
 ```powershell
 .\run-ide.ps1
+```
+
+Create the redistributable Windows ZIP, including the reduced Lean runtime:
+
+```powershell
+.\package-windows.ps1
 ```
 
 Run the CLI self-test directly:
@@ -52,16 +59,16 @@ The repository contains documented examples in `formula_examples`:
 
 `formula-check` performs numerical samples and counterexample searches. A successful numerical run is not presented as a formal proof.
 
-## Optional Lean 4 integration
+## Lean 4 verification
 
-Install Lean with `elan` and make `lean` available on `PATH`. The engine also recognizes:
+The Windows release contains a reduced Lean 4.34.1 runtime in `lean-runtime`; no separate installation is needed. Source builds use `setup-lean.ps1` and the pinned `lean-toolchain`. The engine recognizes:
 
 - `MRE_LEAN_EXE`: full path to the Lean executable
 - `MRE_LEAN_PATH`: semicolon-separated Lean library roots on Windows
 - `LEAN_PATH`: standard Lean search path
 - `MRE_LEAN_TIMEOUT_MS`: verification timeout
 
-The files in `lean/` implement the engine's Lean extraction and semantic-probe helpers. Lean decides elaboration and proof success; missing modules are reported as infrastructure errors rather than mathematical failures.
+The files in `lean/` implement the engine's Lean extraction and semantic-probe helpers. Lean decides elaboration and proof success; missing modules are reported as infrastructure errors rather than mathematical failures. Large local Mathlib/OAI caches are not embedded in the release; workflows that import those libraries must provide their roots through `MRE_LEAN_PATH` or `LEAN_PATH`.
 
 ## Optional services
 
