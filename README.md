@@ -74,7 +74,23 @@ The files in `lean/` implement the engine's Lean extraction and semantic-probe h
 
 - Gemini integration reads `GEMINI_API_KEY` from the environment or from the IDE's RAM-only password field. Keys are not stored in this repository.
 - LM Studio can be selected as a local OpenAI-compatible endpoint.
-- An external KR compiler can be selected with `MRE_KR_COMPILER`. Without it, normal MSVC/CMake builds remain available.
+- The portable KR compiler can be selected with `MRE_KR_HOME` or `KR_COMPILER_HOME`. Point it to the directory containing `runtime`, `dist` and `toolchain`; a supplied `toolchain` subdirectory is normalized to its parent. The engine invokes `runtime\jdk\bin\java.exe -cp dist\KR-Compiler-IDE.jar kr.compile.KrCliMain`. `MRE_KR_COMPILER` remains supported only for legacy wrapper executables.
+
+Validate or use the configured KR compiler:
+
+```powershell
+$env:MRE_KR_HOME = 'C:\Tools\KR-Compiler-Windows-x64'
+.\build-windows\Release\math_research_v03.exe kr-check .
+.\build-windows\Release\math_research_v03.exe kr-build C:\Path\To\KrProject
+```
+
+The repository also provides a validation wrapper which accepts either the KR root or its `toolchain` subdirectory:
+
+```powershell
+.\test-kr-integration.ps1 -KrHome C:\Tools\KR-Compiler-Windows-x64\toolchain
+```
+
+The multi-gigabyte KR distribution is maintained as its own dependency and is not duplicated inside the MathResearchEngine release. Its internal version markers should be checked independently; MathResearchEngine validates the required runtime, JAR and toolchain stamp instead of inferring compatibility from the enclosing directory name. Without KR, normal MSVC/CMake builds remain available.
 
 ## Main targets
 

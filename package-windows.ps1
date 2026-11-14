@@ -10,7 +10,7 @@ $root = $PSScriptRoot
 & (Join-Path $root 'build-windows.ps1') -Configuration $Configuration
 if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
 
-$package = Join-Path $root 'dist\MathResearchEngine-v0.3.0-windows-x64'
+$package = Join-Path $root 'dist\MathResearchEngine-v0.3.1-windows-x64'
 $distRoot = Join-Path $root 'dist'
 if (!(Test-Path -LiteralPath $distRoot)) { New-Item -ItemType Directory -Path $distRoot | Out-Null }
 if (Test-Path -LiteralPath $package) { Remove-Item -LiteralPath $package -Recurse -Force }

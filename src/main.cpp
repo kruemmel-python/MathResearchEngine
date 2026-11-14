@@ -19,6 +19,7 @@
 #include "autonomous_software.hpp"
 #include "database_first_research.hpp"
 #include "evolution_engine.hpp"
+#include "kr_compiler.hpp"
 
 using namespace mre;
 
@@ -71,6 +72,10 @@ static void printUsage() {
               << "      Index the complete read-only mathematical DB, create an auditable dossier, optionally run Lean, and call Gemini or LM Studio\n\n"
               << "  math_research_v03 software-selftest <temp-dir>\n"
               << "      Validate the open-ended software laboratory and persistent research memory\n\n"
+              << "  math_research_v03 kr-check <project-dir>\n"
+              << "      Validate MRE_KR_HOME/KR_COMPILER_HOME and report the selected KR CLI\n\n"
+              << "  math_research_v03 kr-build <project-dir>\n"
+              << "      Build a project through the configured KR Java CLI for Windows\n\n"
               << "  math_research_v03 selftest <temp-dir>\n"
               << "      Execute complete 18-point automated validation test suite\n\n";
 }
@@ -92,6 +97,32 @@ int main(int argc, char** argv) {
 
         if (cmd == "formula-check" && argc >= 3) {
             return runFormulaAnalysis(argv[2], argc >= 4 ? fs::path(argv[3]) : fs::path{});
+        }
+
+        if ((cmd == "kr-check" || cmd == "kr-build") && argc >= 3) {
+            const fs::path project = fs::absolute(argv[2]);
+            check(fs::is_directory(project), "KR project directory missing: " + utf8(project));
+            const KrBuildInvocation invocation = resolveKrBuildInvocation(project);
+            if (!invocation.available) {
+                std::cerr << "KR_CONFIGURATION_ERROR: " << invocation.diagnostic << "\n";
+                return 1;
+            }
+            std::cout << "KR_PROVIDER=" << invocation.provider << "\n";
+            if (cmd == "kr-check") return 0;
+            const ProcessResult result = runProcess(invocation.command, 1800000);
+            std::cout << result.output;
+            if (result.timed_out) {
+                std::cerr << "KR_BUILD_TIMEOUT\n";
+                return 3;
+            }
+            if (result.exit_code != 0) return result.exit_code;
+            const fs::path artifact = findKrArtifact(project);
+            if (artifact.empty()) {
+                std::cerr << "KR_ARTIFACT_ERROR: no executable below " << utf8(project / "KR_BUILD") << "\n";
+                return 1;
+            }
+            std::cout << "KR_ARTIFACT=" << utf8(artifact) << "\n";
+            return 0;
         }
 
         if (cmd == "semantic-probe" && argc >= 8) {

@@ -2,6 +2,7 @@
 #include "common.hpp"
 #include "software_json.hpp"
 #include "math_validation.hpp"
+#include "kr_compiler.hpp"
 
 #include <fstream>
 #include <cstdlib>
@@ -641,19 +642,14 @@ std::string buildMode() {
     return mode == "MSVC" || mode == "KR" ? mode : "AUTO";
 }
 
-fs::path krExecutable() {
-    const std::string value = environmentValue("MRE_KR_COMPILER");
-    if (!value.empty() && fs::is_regular_file(value)) return fs::path(value);
-
-    return fs::path();
-}
-
 fs::path candidateExe(const fs::path& project, bool kr) {
     if (kr) {
         fs::path p = project / "KR_BUILD" / "Release" / "research_candidate.exe";
         if (fs::exists(p)) return p;
         p = project / "KR_BUILD" / "research_candidate.exe";
         if (fs::exists(p)) return p;
+        p = findKrArtifact(project);
+        if (!p.empty()) return p;
     }
 #ifdef _WIN32
     const fs::path win = project / "build" / "Release" / "research_candidate.exe";
@@ -681,17 +677,16 @@ fs::path findGuiExe(const fs::path& project, bool kr) {
 }
 
 ProcessResult buildWithKR(const fs::path& project, uint32_t timeout) {
-    const fs::path compiler = krExecutable();
+    const KrBuildInvocation invocation = resolveKrBuildInvocation(project);
     ProcessResult result;
-    if (compiler.empty() || !fs::is_regular_file(compiler)) {
-        result.output = "KR compiler missing. Set MRE_KR_COMPILER to the full KR-COMPILE.exe path.";
+    if (!invocation.available) {
+        result.output = invocation.diagnostic;
         result.exit_code = 127;
         return result;
     }
 #ifdef _WIN32
-    const std::string command = shellQuote(utf8(compiler)) + " --build " +
-        shellQuote(utf8(fs::absolute(project))) + " --target WINDOWS --configuration Release";
-    result = runProcess(command, std::max<uint32_t>(timeout, 1800000U));
+    result = runProcess(invocation.command, std::max<uint32_t>(timeout, 1800000U));
+    result.output = "[KR_PROVIDER] " + invocation.provider + "\n" + result.output;
     const fs::path buildLog = project / "KR_BUILD" / "build.log";
     if (fs::exists(buildLog)) {
         std::ifstream f(buildLog, std::ios::binary);

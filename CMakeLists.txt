@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(MathResearchEngine VERSION 0.3.0 LANGUAGES CXX)
+project(MathResearchEngine VERSION 0.3.1 LANGUAGES CXX)
 
 # KR uses LLVM-MinGW on Windows: WIN32 is true, MSVC is false.
 if(WIN32 AND MSVC)
@@ -292,3 +292,4 @@ install(TARGETS ${MRE_RELEASE_TARGETS} RUNTIME DESTINATION bin)
 install(DIRECTORY formula_examples/ DESTINATION examples)
 install(DIRECTORY lean/ DESTINATION lean FILES_MATCHING PATTERN "*.lean")
 install(DIRECTORY tests/corpus/ DESTINATION tests/corpus FILES_MATCHING PATTERN "*.lean")
+install(FILES README.md RELEASE_NOTES.md DESTINATION .)

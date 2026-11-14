@@ -1,6 +1,6 @@
-# MathResearchEngine v0.3.0
+# MathResearchEngine v0.3.1
 
-First clean developer release of the current CMake source tree.
+Patch release adding a working portable KR Compiler integration to the clean developer source tree.
 
 ## Included
 
@@ -9,6 +9,7 @@ First clean developer release of the current CMake source tree.
 - Formula counterexample analysis
 - SQLite-backed hypothesis and research workflows
 - Bundled Lean 4.34.1 runtime, extraction, semantic probes and formal verification
+- Native integration with the portable KR Java CLI through `MRE_KR_HOME` or `KR_COMPILER_HOME`
 - K4D, semantic, multi-relation, application-discovery and software-lab targets
 - Reproducible Visual Studio 2022 build script and Windows CI
 - Example `.mreformula` files and Lean helper scripts
