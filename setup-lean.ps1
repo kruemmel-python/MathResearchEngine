@@ -12,8 +12,14 @@ if (Test-Path -LiteralPath $bundled -PathType Leaf) {
 $toolchain = (Get-Content -LiteralPath (Join-Path $root 'lean-toolchain') -Raw).Trim()
 $elan = Get-Command elan -ErrorAction SilentlyContinue
 if (-not $elan) {
-    $installer = Join-Path ([System.IO.Path]::GetTempPath()) 'mre-elan-init.exe'
-    Invoke-WebRequest -Uri 'https://github.com/leanprover/elan/releases/latest/download/elan-x86_64-pc-windows-msvc.exe' -OutFile $installer
+    $bootstrap = Join-Path ([System.IO.Path]::GetTempPath()) 'mre-elan-bootstrap'
+    if (Test-Path -LiteralPath $bootstrap) { Remove-Item -LiteralPath $bootstrap -Recurse -Force }
+    New-Item -ItemType Directory -Path $bootstrap | Out-Null
+    $archive = Join-Path $bootstrap 'elan.zip'
+    Invoke-WebRequest -Uri 'https://github.com/leanprover/elan/releases/latest/download/elan-x86_64-pc-windows-msvc.zip' -OutFile $archive
+    Expand-Archive -LiteralPath $archive -DestinationPath $bootstrap
+    $installer = Get-ChildItem -LiteralPath $bootstrap -Recurse -Filter 'elan-init.exe' -File | Select-Object -First 1 -ExpandProperty FullName
+    if (-not $installer) { throw 'elan-init.exe was not found in the official archive.' }
     & $installer -y --default-toolchain $toolchain
     if ($LASTEXITCODE -ne 0) { throw 'elan installation failed.' }
     $elanPath = Join-Path $env:USERPROFILE '.elan\bin'
